@@ -1,45 +1,39 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useData } from "../context/DataContext";
-import { Layout } from "../components/Layout";
-import { FormField } from "../components/FormField";
-import { BarcodeScanner } from "../components/BarcodeScanner";
-import { DataList } from "../components/DataList";
-import { TemplateDownloader } from "../components/TemplateDownloader";
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { PlusIcon, EditIcon, Trash2Icon, ScanIcon, ListIcon, WormIcon as FormIcon } from "lucide-react";
-import { Product } from "../types";
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { Layout } from '../components/Layout';
+import { FormField } from '../components/FormField';
+import { BarcodeScanner } from '../components/BarcodeScanner';
+import { useData } from '../context/DataContext';
+import { Ionicons } from '@expo/vector-icons';
+import { Product } from '../types';
 
-export const ProductCatalogScreen: React.FC = () => {
-  const navigate = useNavigate();
-  const { 
-    products, 
-    addProduct, 
-    updateProduct, 
-    deleteProduct, 
-    selectedProduct, 
-    setSelectedProduct 
-  } = useData();
-  
+interface ProductCatalogScreenProps {
+  onBack: () => void;
+}
+
+export const ProductCatalogScreen: React.FC<ProductCatalogScreenProps> = ({ onBack }) => {
+  const { products, addProduct, updateProduct, deleteProduct } = useData();
   const [showScanner, setShowScanner] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState({
-    sku: "",
-    productName: "",
-    measurementType: "",
-    measurementValue: "",
-    brand: "",
-    category: "",
-    gst: "",
-    mrp: "",
-    productImage: "",
+    sku: '',
+    productName: '',
+    measurementType: '',
+    measurementValue: '',
+    brand: '',
+    category: '',
+    gst: '',
+    mrp: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmit = () => {
+    if (!formData.sku || !formData.productName || !formData.mrp) {
+      Alert.alert('Error', 'Please fill in all required fields');
+      return;
+    }
+
     const productData: Omit<Product, 'id'> = {
       sku: formData.sku,
       name: formData.productName,
@@ -49,61 +43,38 @@ export const ProductCatalogScreen: React.FC = () => {
       category: formData.category,
       gst: formData.gst,
       mrp: parseFloat(formData.mrp) || 0,
-      imageUrl: formData.productImage,
     };
 
-    if (isEditing && selectedProduct) {
-      updateProduct(selectedProduct.id, productData);
-      setSelectedProduct(null);
-      setIsEditing(false);
+    if (isEditing && editingProduct) {
+      updateProduct(editingProduct.id, productData);
+      Alert.alert('Success', 'Product updated successfully');
     } else {
       addProduct(productData as Product);
+      Alert.alert('Success', 'Product added successfully');
     }
 
-    // Reset form
+    resetForm();
+  };
+
+  const resetForm = () => {
     setFormData({
-      sku: "",
-      productName: "",
-      measurementType: "",
-      measurementValue: "",
-      brand: "",
-      category: "",
-      gst: "",
-      mrp: "",
-      productImage: "",
+      sku: '',
+      productName: '',
+      measurementType: '',
+      measurementValue: '',
+      brand: '',
+      category: '',
+      gst: '',
+      mrp: '',
     });
     setShowForm(false);
-  };
-
-  const handleFieldChange = (field: string, value: string) => {
-    setFormData({ ...formData, [field]: value });
-  };
-
-  const handleScanSuccess = (scannedCode: string) => {
-    // Auto-fill SKU field with scanned code
-    setFormData({ ...formData, sku: scannedCode });
-  };
-
-  const handleAdd = () => {
     setIsEditing(false);
-    setSelectedProduct(null);
-    setFormData({
-      sku: "",
-      productName: "",
-      measurementType: "",
-      measurementValue: "",
-      brand: "",
-      category: "",
-      gst: "",
-      mrp: "",
-      productImage: "",
-    });
-    setShowForm(true);
+    setEditingProduct(null);
   };
 
   const handleEdit = (product: Product) => {
+    setEditingProduct(product);
     setIsEditing(true);
-    setSelectedProduct(product);
     setFormData({
       sku: product.sku,
       productName: product.name,
@@ -113,201 +84,214 @@ export const ProductCatalogScreen: React.FC = () => {
       category: product.category,
       gst: product.gst,
       mrp: product.mrp.toString(),
-      productImage: product.imageUrl || "",
     });
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      deleteProduct(id);
-    }
+  const handleDelete = (product: Product) => {
+    Alert.alert(
+      'Delete Product',
+      `Are you sure you want to delete "${product.name}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            deleteProduct(product.id);
+            Alert.alert('Success', 'Product deleted successfully');
+          },
+        },
+      ]
+    );
   };
 
-  const renderProductItem = (product: Product) => (
-    <div>
-      <div className="font-semibold text-[#913472]">{product.name}</div>
-      <div className="text-sm text-gray-600">SKU: {product.sku}</div>
-      <div className="text-sm text-gray-600">Brand: {product.brand}</div>
-      <div className="text-sm text-gray-600">Category: {product.category}</div>
-      <div className="text-sm text-gray-600">MRP: ₹{product.mrp}</div>
-    </div>
-  );
+  const handleScanSuccess = (scannedCode: string) => {
+    setFormData({ ...formData, sku: scannedCode });
+  };
 
   return (
-    <Layout title="PRODUCT CATALOG DETAILS" onBack={() => navigate("/dashboard")}>
-      <div className="space-y-4">
+    <Layout title="PRODUCT CATALOG DETAILS" onBack={onBack}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Action Buttons */}
-        <div className="flex gap-2 mb-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowScanner(true)}
-            className="border-[#913472] text-[#913472] hover:bg-[#913472] hover:text-white"
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            style={styles.scanButton}
+            onPress={() => setShowScanner(true)}
           >
-            <ScanIcon className="w-4 h-4 mr-2" />
-            Scan SKU
-          </Button>
-          <TemplateDownloader templateType="product" className="flex-1" />
-        </div>
+            <Ionicons name="scan" size={16} color="#913472" />
+            <Text style={styles.scanButtonText}>Scan SKU</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.downloadButton}>
+            <Ionicons name="download" size={16} color="white" />
+            <Text style={styles.downloadButtonText}>Download Template</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* CRUD Buttons */}
-        <div className="flex gap-2 mb-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleAdd}
-            className="flex-1 bg-[#cc95de80] border-[#913472] text-[#913472] hover:bg-[#cc95de]"
+        <View style={styles.crudButtons}>
+          <TouchableOpacity
+            style={styles.crudButton}
+            onPress={() => {
+              resetForm();
+              setShowForm(true);
+            }}
           >
-            <PlusIcon className="w-4 h-4 mr-2" />
-            Add
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowForm(!showForm)}
-            className="flex-1 bg-[#cc95de80] border-[#913472] text-[#913472] hover:bg-[#cc95de]"
+            <Ionicons name="add" size={16} color="#913472" />
+            <Text style={styles.crudButtonText}>Add</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.crudButton}
+            onPress={() => setShowForm(!showForm)}
           >
-            {showForm ? <ListIcon className="w-4 h-4 mr-2" /> : <FormIcon className="w-4 h-4 mr-2" />}
-            {showForm ? 'View List' : 'Show Form'}
-          </Button>
-        </div>
+            <Ionicons name={showForm ? "list" : "create"} size={16} color="#913472" />
+            <Text style={styles.crudButtonText}>{showForm ? 'View List' : 'Show Form'}</Text>
+          </TouchableOpacity>
+        </View>
 
-        {/* Conditional Rendering: Form or List */}
+        {/* Form or List */}
         {showForm ? (
-          <Card className="bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-[#913472]">
-                {isEditing ? 'Edit Product' : 'Add New Product'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <FormField
-                  label="SKU"
-                  value={formData.sku}
-                  onChange={(value) => handleFieldChange("sku", value)}
-                  placeholder="Enter SKU"
-                  required
-                />
+          <View style={styles.formContainer}>
+            <Text style={styles.formTitle}>
+              {isEditing ? 'Edit Product' : 'Add New Product'}
+            </Text>
+            
+            <FormField
+              label="SKU"
+              value={formData.sku}
+              onChange={(value) => setFormData({ ...formData, sku: value })}
+              placeholder="Enter SKU"
+              required
+            />
 
-                <FormField
-                  label="Product Name"
-                  value={formData.productName}
-                  onChange={(value) => handleFieldChange("productName", value)}
-                  placeholder="Enter product name"
-                  required
-                />
+            <FormField
+              label="Product Name"
+              value={formData.productName}
+              onChange={(value) => setFormData({ ...formData, productName: value })}
+              placeholder="Enter product name"
+              required
+            />
 
-                <FormField
-                  label="Measurement Type"
-                  type="select"
-                  value={formData.measurementType}
-                  onChange={(value) => handleFieldChange("measurementType", value)}
-                  options={[
-                    { value: "kg", label: "Kilogram (kg)" },
-                    { value: "g", label: "Gram (g)" },
-                    { value: "l", label: "Liter (l)" },
-                    { value: "ml", label: "Milliliter (ml)" },
-                    { value: "pcs", label: "Pieces" },
-                  ]}
-                  required
-                />
+            <FormField
+              label="Measurement Type"
+              type="select"
+              value={formData.measurementType}
+              onChange={(value) => setFormData({ ...formData, measurementType: value })}
+              options={[
+                { value: 'kg', label: 'Kilogram (kg)' },
+                { value: 'g', label: 'Gram (g)' },
+                { value: 'l', label: 'Liter (l)' },
+                { value: 'ml', label: 'Milliliter (ml)' },
+                { value: 'pcs', label: 'Pieces' },
+              ]}
+              required
+            />
 
-                <FormField
-                  label="Measurement Value"
-                  value={formData.measurementValue}
-                  onChange={(value) => handleFieldChange("measurementValue", value)}
-                  placeholder="Enter measurement value"
-                  required
-                />
+            <FormField
+              label="Measurement Value"
+              value={formData.measurementValue}
+              onChange={(value) => setFormData({ ...formData, measurementValue: value })}
+              placeholder="Enter measurement value"
+              required
+            />
 
-                <FormField
-                  label="Brand"
-                  value={formData.brand}
-                  onChange={(value) => handleFieldChange("brand", value)}
-                  placeholder="Enter brand name"
-                  required
-                />
+            <FormField
+              label="Brand"
+              value={formData.brand}
+              onChange={(value) => setFormData({ ...formData, brand: value })}
+              placeholder="Enter brand name"
+              required
+            />
 
-                <FormField
-                  label="Category"
-                  type="select"
-                  value={formData.category}
-                  onChange={(value) => handleFieldChange("category", value)}
-                  options={[
-                    { value: "food", label: "Food & Beverages" },
-                    { value: "electronics", label: "Electronics" },
-                    { value: "clothing", label: "Clothing" },
-                    { value: "household", label: "Household Items" },
-                  ]}
-                  required
-                />
+            <FormField
+              label="Category"
+              type="select"
+              value={formData.category}
+              onChange={(value) => setFormData({ ...formData, category: value })}
+              options={[
+                { value: 'food', label: 'Food & Beverages' },
+                { value: 'electronics', label: 'Electronics' },
+                { value: 'clothing', label: 'Clothing' },
+                { value: 'household', label: 'Household Items' },
+              ]}
+              required
+            />
 
-                <FormField
-                  label="GST (%)"
-                  type="select"
-                  value={formData.gst}
-                  onChange={(value) => handleFieldChange("gst", value)}
-                  options={[
-                    { value: "0", label: "0%" },
-                    { value: "5", label: "5%" },
-                    { value: "12", label: "12%" },
-                    { value: "18", label: "18%" },
-                    { value: "28", label: "28%" },
-                  ]}
-                  required
-                />
+            <FormField
+              label="GST (%)"
+              type="select"
+              value={formData.gst}
+              onChange={(value) => setFormData({ ...formData, gst: value })}
+              options={[
+                { value: '0', label: '0%' },
+                { value: '5', label: '5%' },
+                { value: '12', label: '12%' },
+                { value: '18', label: '18%' },
+                { value: '28', label: '28%' },
+              ]}
+              required
+            />
 
-                <FormField
-                  label="MRP"
-                  type="text"
-                  value={formData.mrp}
-                  onChange={(value) => handleFieldChange("mrp", value)}
-                  placeholder="Enter MRP"
-                  required
-                />
+            <FormField
+              label="MRP"
+              value={formData.mrp}
+              onChange={(value) => setFormData({ ...formData, mrp: value })}
+              placeholder="Enter MRP"
+              required
+            />
 
-                <FormField
-                  label="SKU & Product Name Upload"
-                  type="file"
-                  onChange={(value) => handleFieldChange("productImage", value)}
-                />
-
-                <div className="flex gap-2">
-                  <Button
-                    type="submit"
-                    className="flex-1 bg-[#913472] hover:bg-[#7a2d61] text-white py-3 text-lg font-semibold"
-                  >
-                    {isEditing ? 'Update' : 'Submit'}
-                  </Button>
-                  {isEditing && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setIsEditing(false);
-                        setSelectedProduct(null);
-                        setShowForm(false);
-                      }}
-                      className="border-gray-300 text-gray-600 hover:bg-gray-100"
-                    >
-                      Cancel
-                    </Button>
-                  )}
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+            <View style={styles.formButtons}>
+              <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                <Text style={styles.submitButtonText}>
+                  {isEditing ? 'Update' : 'Submit'}
+                </Text>
+              </TouchableOpacity>
+              
+              {isEditing && (
+                <TouchableOpacity style={styles.cancelButton} onPress={resetForm}>
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
         ) : (
-          <DataList
-            data={products}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            renderItem={renderProductItem}
-            getItemId={(product) => product.id}
-            emptyMessage="No products added yet. Click 'Add' to create your first product."
-          />
+          <View style={styles.listContainer}>
+            {products.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>
+                  No products added yet. Click 'Add' to create your first product.
+                </Text>
+              </View>
+            ) : (
+              products.map((product) => (
+                <View key={product.id} style={styles.listItem}>
+                  <View style={styles.itemContent}>
+                    <Text style={styles.itemTitle}>{product.name}</Text>
+                    <Text style={styles.itemDetail}>SKU: {product.sku}</Text>
+                    <Text style={styles.itemDetail}>Brand: {product.brand}</Text>
+                    <Text style={styles.itemDetail}>Category: {product.category}</Text>
+                    <Text style={styles.itemDetail}>MRP: ₹{product.mrp}</Text>
+                  </View>
+                  <View style={styles.itemActions}>
+                    <TouchableOpacity
+                      style={styles.editButton}
+                      onPress={() => handleEdit(product)}
+                    >
+                      <Ionicons name="create" size={16} color="#913472" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => handleDelete(product)}
+                    >
+                      <Ionicons name="trash" size={16} color="#ef4444" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))
+            )}
+          </View>
         )}
 
         <BarcodeScanner
@@ -316,7 +300,169 @@ export const ProductCatalogScreen: React.FC = () => {
           onScanSuccess={handleScanSuccess}
           title="Scan Product SKU/Barcode"
         />
-      </div>
+      </ScrollView>
     </Layout>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  scanButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#913472',
+    borderRadius: 8,
+    padding: 12,
+    gap: 8,
+  },
+  scanButtonText: {
+    color: '#913472',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  downloadButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#913472',
+    borderRadius: 8,
+    padding: 12,
+    gap: 8,
+  },
+  downloadButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  crudButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  crudButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(204, 149, 222, 0.5)',
+    borderWidth: 1,
+    borderColor: '#913472',
+    borderRadius: 8,
+    padding: 12,
+    gap: 8,
+  },
+  crudButtonText: {
+    color: '#913472',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  formContainer: {
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    borderRadius: 12,
+    padding: 16,
+  },
+  formTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#913472',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  formButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  submitButton: {
+    flex: 1,
+    backgroundColor: '#913472',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+  },
+  submitButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  cancelButton: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    minWidth: 80,
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  listContainer: {
+    gap: 12,
+  },
+  emptyState: {
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+  },
+  emptyStateText: {
+    color: '#666',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  listItem: {
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  itemContent: {
+    flex: 1,
+  },
+  itemTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#913472',
+    marginBottom: 4,
+  },
+  itemDetail: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 2,
+  },
+  itemActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginLeft: 16,
+  },
+  editButton: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#913472',
+    borderRadius: 6,
+    padding: 8,
+  },
+  deleteButton: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#ef4444',
+    borderRadius: 6,
+    padding: 8,
+  },
+});

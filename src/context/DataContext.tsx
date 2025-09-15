@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useAsyncStorage } from '../hooks/useAsyncStorage';
 import { Product, Vendor, PurchaseData, ConsumptionData, ClosingStock } from '../types';
 
 interface DataContextType {
@@ -45,6 +45,8 @@ interface DataContextType {
   setSelectedPurchaseData: (data: PurchaseData | null) => void;
   setSelectedConsumptionData: (data: ConsumptionData | null) => void;
   setSelectedClosingStock: (data: ClosingStock | null) => void;
+  
+  loading: boolean;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -62,17 +64,19 @@ interface DataProviderProps {
 }
 
 export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
-  const [products, setProducts] = useLocalStorage<Product[]>('products', []);
-  const [vendors, setVendors] = useLocalStorage<Vendor[]>('vendors', []);
-  const [purchaseData, setPurchaseData] = useLocalStorage<PurchaseData[]>('purchaseData', []);
-  const [consumptionData, setConsumptionData] = useLocalStorage<ConsumptionData[]>('consumptionData', []);
-  const [closingStock, setClosingStock] = useLocalStorage<ClosingStock[]>('closingStock', []);
+  const [products, setProducts, productsLoading] = useAsyncStorage<Product[]>('products', []);
+  const [vendors, setVendors, vendorsLoading] = useAsyncStorage<Vendor[]>('vendors', []);
+  const [purchaseData, setPurchaseData, purchaseLoading] = useAsyncStorage<PurchaseData[]>('purchaseData', []);
+  const [consumptionData, setConsumptionData, consumptionLoading] = useAsyncStorage<ConsumptionData[]>('consumptionData', []);
+  const [closingStock, setClosingStock, closingLoading] = useAsyncStorage<ClosingStock[]>('closingStock', []);
   
-  const [selectedProduct, setSelectedProduct] = useLocalStorage<Product | null>('selectedProduct', null);
-  const [selectedVendor, setSelectedVendor] = useLocalStorage<Vendor | null>('selectedVendor', null);
-  const [selectedPurchaseData, setSelectedPurchaseData] = useLocalStorage<PurchaseData | null>('selectedPurchaseData', null);
-  const [selectedConsumptionData, setSelectedConsumptionData] = useLocalStorage<ConsumptionData | null>('selectedConsumptionData', null);
-  const [selectedClosingStock, setSelectedClosingStock] = useLocalStorage<ClosingStock | null>('selectedClosingStock', null);
+  const [selectedProduct, setSelectedProduct] = useAsyncStorage<Product | null>('selectedProduct', null);
+  const [selectedVendor, setSelectedVendor] = useAsyncStorage<Vendor | null>('selectedVendor', null);
+  const [selectedPurchaseData, setSelectedPurchaseData] = useAsyncStorage<PurchaseData | null>('selectedPurchaseData', null);
+  const [selectedConsumptionData, setSelectedConsumptionData] = useAsyncStorage<ConsumptionData | null>('selectedConsumptionData', null);
+  const [selectedClosingStock, setSelectedClosingStock] = useAsyncStorage<ClosingStock | null>('selectedClosingStock', null);
+
+  const loading = productsLoading || vendorsLoading || purchaseLoading || consumptionLoading || closingLoading;
 
   // Product functions
   const addProduct = (product: Product) => {
@@ -170,6 +174,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     setSelectedPurchaseData,
     setSelectedConsumptionData,
     setSelectedClosingStock,
+    loading,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

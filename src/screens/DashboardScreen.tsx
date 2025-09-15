@@ -1,93 +1,142 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { Layout } from "../components/Layout";
-import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
-import {
-  PackageIcon,
-  UsersIcon,
-  ShoppingCartIcon,
-  TrendingDownIcon,
-  ArchiveIcon,
-  LogOutIcon,
-} from "lucide-react";
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { Layout } from '../components/Layout';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const DashboardScreen: React.FC = () => {
-  const navigate = useNavigate();
+interface DashboardScreenProps {
+  onNavigate: (screen: string) => void;
+  onLogout: () => void;
+}
 
+export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, onLogout }) => {
   const menuItems = [
     {
-      title: "Product Catalog",
-      icon: PackageIcon,
-      route: "/product-catalog",
-      color: "bg-blue-500",
+      title: 'Product Catalog',
+      icon: 'cube-outline' as const,
+      route: 'ProductCatalog',
+      color: '#3b82f6',
     },
     {
-      title: "Vendor Catalog",
-      icon: UsersIcon,
-      route: "/vendor-catalog",
-      color: "bg-green-500",
+      title: 'Vendor Catalog',
+      icon: 'people-outline' as const,
+      route: 'VendorCatalog',
+      color: '#10b981',
     },
     {
-      title: "Purchase Data",
-      icon: ShoppingCartIcon,
-      route: "/purchase-data",
-      color: "bg-orange-500",
+      title: 'Purchase Data',
+      icon: 'cart-outline' as const,
+      route: 'PurchaseData',
+      color: '#f59e0b',
     },
     {
-      title: "Consumption Data",
-      icon: TrendingDownIcon,
-      route: "/consumption-data",
-      color: "bg-red-500",
+      title: 'Consumption Data',
+      icon: 'trending-down-outline' as const,
+      route: 'ConsumptionData',
+      color: '#ef4444',
     },
     {
-      title: "Closing Stock",
-      icon: ArchiveIcon,
-      route: "/closing-stock",
-      color: "bg-purple-500",
+      title: 'Closing Stock',
+      icon: 'archive-outline' as const,
+      route: 'ClosingStock',
+      color: '#8b5cf6',
     },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    navigate("/");
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            await AsyncStorage.removeItem('user');
+            onLogout();
+          },
+        },
+      ]
+    );
   };
 
   return (
     <Layout title="INVENTORY MANAGEMENT" showBackButton={false}>
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 gap-4">
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.menuGrid}>
           {menuItems.map((item) => (
-            <Card
+            <TouchableOpacity
               key={item.route}
-              className="cursor-pointer hover:shadow-lg transition-shadow bg-white/80 backdrop-blur-sm"
-              onClick={() => navigate(item.route)}
+              style={styles.menuItem}
+              onPress={() => onNavigate(item.route)}
             >
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-4">
-                  <div className={`p-3 rounded-lg ${item.color}`}>
-                    <item.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-[#913472]">
-                      {item.title}
-                    </h3>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
+                <Ionicons name={item.icon} size={32} color="white" />
+              </View>
+              <Text style={styles.menuTitle}>{item.title}</Text>
+            </TouchableOpacity>
           ))}
-        </div>
+        </View>
 
-        <Button
-          onClick={handleLogout}
-          variant="outline"
-          className="w-full mt-8 border-[#913472] text-[#913472] hover:bg-[#913472] hover:text-white"
-        >
-          <LogOutIcon className="w-4 h-4 mr-2" />
-          Logout
-        </Button>
-      </div>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={20} color="#913472" />
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </Layout>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  menuGrid: {
+    gap: 16,
+    paddingBottom: 20,
+  },
+  menuItem: {
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    borderRadius: 12,
+    padding: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  iconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  menuTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#913472',
+    flex: 1,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#913472',
+  },
+  logoutText: {
+    color: '#913472',
+    fontSize: 16,
+    fontWeight: '500',
+    marginLeft: 8,
+  },
+});

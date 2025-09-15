@@ -1,124 +1,222 @@
-import React from "react";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
-import { Select } from "./ui/select";
-import { Textarea } from "./ui/textarea";
-import { CalendarIcon, UploadIcon } from "lucide-react";
+import React from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import { Ionicons } from '@expo/vector-icons';
 
 interface FormFieldProps {
   label: string;
-  type?: "text" | "select" | "textarea" | "date" | "file" | "radio";
+  type?: 'text' | 'select' | 'textarea' | 'date' | 'file' | 'radio';
   placeholder?: string;
   options?: { value: string; label: string }[];
   radioOptions?: { value: string; label: string }[];
   value?: string;
   onChange?: (value: string) => void;
   required?: boolean;
-  className?: string;
+  multiline?: boolean;
+  onPress?: () => void;
 }
 
 export const FormField: React.FC<FormFieldProps> = ({
   label,
-  type = "text",
+  type = 'text',
   placeholder,
   options,
   radioOptions,
   value,
   onChange,
   required,
-  className = "",
+  multiline = false,
+  onPress,
 }) => {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    onChange?.(e.target.value);
-  };
-
   const renderField = () => {
     switch (type) {
-      case "select":
+      case 'select':
         return (
-          <Select value={value} onChange={handleChange} placeholder={placeholder}>
-            {options?.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={value}
+              onValueChange={onChange}
+              style={styles.picker}
+            >
+              <Picker.Item label={placeholder || "Select..."} value="" />
+              {options?.map((option) => (
+                <Picker.Item key={option.value} label={option.label} value={option.value} />
+              ))}
+            </Picker>
+          </View>
         );
       
-      case "textarea":
+      case 'textarea':
         return (
-          <Textarea
+          <TextInput
+            style={[styles.input, styles.textArea]}
             value={value}
-            onChange={handleChange}
+            onChangeText={onChange}
             placeholder={placeholder}
-            rows={3}
+            multiline={true}
+            numberOfLines={3}
           />
         );
       
-      case "date":
+      case 'date':
         return (
-          <div className="relative">
-            <Input
-              type="date"
-              value={value}
-              onChange={handleChange}
-              className="pr-10"
-            />
-            <CalendarIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#913472] pointer-events-none" />
-          </div>
+          <TouchableOpacity style={styles.dateInput} onPress={onPress}>
+            <Text style={[styles.dateText, !value && styles.placeholder]}>
+              {value || placeholder || 'Select Date'}
+            </Text>
+            <Ionicons name="calendar" size={20} color="#913472" />
+          </TouchableOpacity>
         );
       
-      case "file":
+      case 'file':
         return (
-          <div className="relative">
-            <Input
-              type="file"
-              onChange={handleChange}
-              className="pr-10"
-              accept="image/*,.pdf"
-            />
-            <UploadIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#913472] pointer-events-none" />
-          </div>
+          <TouchableOpacity style={styles.fileInput} onPress={onPress}>
+            <Text style={[styles.fileText, !value && styles.placeholder]}>
+              {value || 'Choose File'}
+            </Text>
+            <Ionicons name="cloud-upload" size={20} color="#913472" />
+          </TouchableOpacity>
         );
       
-      case "radio":
+      case 'radio':
         return (
-          <div className="flex gap-4">
+          <View style={styles.radioContainer}>
             {radioOptions?.map((option) => (
-              <label key={option.value} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name={label}
-                  value={option.value}
-                  checked={value === option.value}
-                  onChange={handleChange}
-                  className="w-4 h-4 text-[#913472] border-[#913472] focus:ring-[#913472]"
-                />
-                <span className="text-sm text-[#913472]">{option.label}</span>
-              </label>
+              <TouchableOpacity
+                key={option.value}
+                style={styles.radioOption}
+                onPress={() => onChange?.(option.value)}
+              >
+                <View style={[
+                  styles.radioCircle,
+                  value === option.value && styles.radioSelected
+                ]}>
+                  {value === option.value && <View style={styles.radioInner} />}
+                </View>
+                <Text style={styles.radioLabel}>{option.label}</Text>
+              </TouchableOpacity>
             ))}
-          </div>
+          </View>
         );
       
       default:
         return (
-          <Input
-            type={type}
+          <TextInput
+            style={styles.input}
             value={value}
-            onChange={handleChange}
+            onChangeText={onChange}
             placeholder={placeholder}
+            multiline={multiline}
           />
         );
     }
   };
 
   return (
-    <div className={`space-y-2 ${className}`}>
-      <Label className="text-base font-medium">
+    <View style={styles.container}>
+      <Text style={styles.label}>
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
-      </Label>
+        {required && <Text style={styles.required}> *</Text>}
+      </Text>
       {renderField()}
-    </div>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 8,
+    color: '#333',
+  },
+  required: {
+    color: '#ff0000',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: 'white',
+  },
+  textArea: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    backgroundColor: 'white',
+  },
+  picker: {
+    height: 50,
+  },
+  dateInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: 'white',
+  },
+  dateText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  fileInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: 'white',
+  },
+  fileText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  placeholder: {
+    color: '#999',
+  },
+  radioContainer: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  radioOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  radioCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#913472',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioSelected: {
+    backgroundColor: '#913472',
+  },
+  radioInner: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'white',
+  },
+  radioLabel: {
+    fontSize: 14,
+    color: '#913472',
+  },
+});

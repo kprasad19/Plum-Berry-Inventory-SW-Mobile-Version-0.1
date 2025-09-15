@@ -1,6 +1,7 @@
-import React from "react";
-import { ArrowLeftIcon } from "lucide-react";
-import { Button } from "./ui/button";
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 interface LayoutProps {
   title: string;
@@ -16,30 +17,57 @@ export const Layout: React.FC<LayoutProps> = ({
   showBackButton = true,
 }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#cc95de40] to-[#cc95de60]">
-      <div className="max-w-md mx-auto bg-gradient-to-br from-[#cc95de40] to-[#cc95de60] min-h-screen">
-        {/* Header */}
-        <header className="bg-[#913472] px-4 py-6 relative">
-          {showBackButton && onBack && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBack}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 p-2"
-            >
-              <ArrowLeftIcon className="w-5 h-5" />
-            </Button>
-          )}
-          <h1 className="text-white text-lg font-black text-center px-8">
-            {title}
-          </h1>
-        </header>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#913472" />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        {showBackButton && onBack && (
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={onBack}
+          >
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+        )}
+        <Text style={styles.headerTitle}>{title}</Text>
+      </View>
 
-        {/* Content */}
-        <div className="p-4">
-          {children}
-        </div>
-      </div>
-    </div>
+      {/* Content */}
+      <View style={styles.content}>
+        {children}
+      </View>
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#cc95de40',
+  },
+  header: {
+    backgroundColor: '#913472',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 16,
+    padding: 8,
+  },
+  headerTitle: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+});
