@@ -8,7 +8,7 @@ import { DataList } from "../components/DataList";
 import { TemplateDownloader } from "../components/TemplateDownloader";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { PlusIcon, ScanIcon, ListIcon, FormIcon } from "lucide-react";
+import { PlusIcon, ScanIcon, ListIcon, WormIcon as FormIcon } from "lucide-react";
 import { Vendor } from "../types";
 
 export const VendorCatalogScreen: React.FC = () => {
