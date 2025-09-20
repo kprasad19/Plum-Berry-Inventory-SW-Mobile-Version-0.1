@@ -6,6 +6,13 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [react()],
   base: "./",
+  optimizeDeps: {
+    esbuildOptions: {
+      loader: {
+        '.js': 'tsx',
+      },
+    },
+  },
   css: {
     postcss: {
       plugins: [tailwind()],
