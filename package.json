@@ -24,7 +24,7 @@
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.453.0",
     "react": "18.2.0",
-    "react-dom": "^18.2.0",
+    "react-dom": "18.2.0",
     "react-hook-form": "^7.62.0",
     "react-native": "0.72.6",
     "react-webcam": "^7.2.0",
