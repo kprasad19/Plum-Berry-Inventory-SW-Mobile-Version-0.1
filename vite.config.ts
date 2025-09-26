@@ -23,12 +23,12 @@ export default defineConfig({
     alias: {
       'react-native': 'react-native-web',
       'react-native-svg': 'react-native-web-svg',
-      'react-native/Libraries/Utilities/codegenNativeCommands': path.resolve(__dirname, 'node_modules/react-native-web/dist/modules/Utilities/codegenNativeCommands.js'),
-      'react-native/Libraries/Image/AssetSourceResolver': path.resolve(__dirname, 'node_modules/react-native-web/dist/modules/Image/AssetSourceResolver.js'),
-      'react-native/Libraries/Image/AssetRegistry': path.resolve(__dirname, 'node_modules/react-native-web/dist/modules/Image/AssetRegistry.js'),
-      'react-native/Libraries/ReactNative/AppContainer': path.resolve(__dirname, 'node_modules/react-native-web/dist/modules/ReactNative/AppContainer.js'),
-      'react-native/Libraries/Image/resolveAssetSource': path.resolve(__dirname, 'node_modules/react-native-web/dist/modules/Image/resolveAssetSource.js'),
-      'react-native/Libraries/Utilities/codegenNativeComponent': path.resolve(__dirname, 'node_modules/react-native-web/dist/modules/Utilities/codegenNativeComponent.js')
+      'react-native/Libraries/Utilities/codegenNativeCommands': 'react-native-web/dist/modules/Utilities/codegenNativeCommands.js',
+      'react-native/Libraries/Image/AssetSourceResolver': 'react-native-web/dist/modules/Image/AssetSourceResolver.js',
+      'react-native/Libraries/Image/AssetRegistry': 'react-native-web/dist/modules/Image/AssetRegistry.js',
+      'react-native/Libraries/ReactNative/AppContainer': 'react-native-web/dist/modules/ReactNative/AppContainer.js',
+      'react-native/Libraries/Image/resolveAssetSource': 'react-native-web/dist/modules/Image/resolveAssetSource.js',
+      'react-native/Libraries/Utilities/codegenNativeComponent': 'react-native-web/dist/modules/Utilities/codegenNativeComponent.js'
     }
   },
   optimizeDeps: {
