@@ -11,10 +11,19 @@ export default defineConfig({
       babelConfig: {
         presets: ['@babel/preset-flow', '@babel/preset-react']
       },
-      filter: /node_modules\/(react-native|@react-native|@expo)/
+      filter: (id) => {
+        return /node_modules\/(react-native|@react-native|@expo)/.test(id) && 
+               /\.(js|jsx|ts|tsx)$/.test(id);
+      }
     })
   ],
   base: "./",
+  resolve: {
+    alias: {
+      'react-native': 'react-native-web',
+      'react-native-svg': 'react-native-web-svg'
+    }
+  },
   optimizeDeps: {
     esbuildOptions: {
       loader: {
