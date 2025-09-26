@@ -1,5 +1,6 @@
 import react from "@vitejs/plugin-react";
 import tailwind from "tailwindcss";
+import path from "path";
 import { defineConfig } from "vite";
 import babel from "vite-plugin-babel";
 
@@ -22,12 +23,12 @@ export default defineConfig({
     alias: {
       'react-native': 'react-native-web',
       'react-native-svg': 'react-native-web-svg',
-      'react-native/Libraries/Utilities/codegenNativeCommands': 'react-native-web',
-      'react-native/Libraries/Image/AssetSourceResolver': 'react-native-web',
-      'react-native/Libraries/Image/AssetRegistry': 'react-native-web',
-      'react-native/Libraries/ReactNative/AppContainer': 'react-native-web',
-      'react-native/Libraries/Image/resolveAssetSource': 'react-native-web',
-      'react-native/Libraries/Utilities/codegenNativeComponent': 'react-native-web'
+      'react-native/Libraries/Utilities/codegenNativeCommands': path.resolve(__dirname, 'node_modules/react-native-web/dist/exports/index.js'),
+      'react-native/Libraries/Image/AssetSourceResolver': path.resolve(__dirname, 'node_modules/react-native-web/dist/exports/Image/index.js'),
+      'react-native/Libraries/Image/AssetRegistry': path.resolve(__dirname, 'node_modules/react-native-web/dist/exports/Image/index.js'),
+      'react-native/Libraries/ReactNative/AppContainer': path.resolve(__dirname, 'node_modules/react-native-web/dist/exports/AppRegistry/index.js'),
+      'react-native/Libraries/Image/resolveAssetSource': path.resolve(__dirname, 'node_modules/react-native-web/dist/exports/Image/index.js'),
+      'react-native/Libraries/Utilities/codegenNativeComponent': path.resolve(__dirname, 'node_modules/react-native-web/dist/exports/index.js')
     }
   },
   optimizeDeps: {
