@@ -21,7 +21,13 @@ export default defineConfig({
   resolve: {
     alias: {
       'react-native': 'react-native-web',
-      'react-native-svg': 'react-native-web-svg'
+      'react-native-svg': 'react-native-web-svg',
+      'react-native/Libraries/Utilities/codegenNativeCommands': 'react-native-web',
+      'react-native/Libraries/Image/AssetSourceResolver': 'react-native-web',
+      'react-native/Libraries/Image/AssetRegistry': 'react-native-web',
+      'react-native/Libraries/ReactNative/AppContainer': 'react-native-web',
+      'react-native/Libraries/Image/resolveAssetSource': 'react-native-web',
+      'react-native/Libraries/Utilities/codegenNativeComponent': 'react-native-web'
     }
   },
   optimizeDeps: {
