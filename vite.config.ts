@@ -22,14 +22,34 @@ export default defineConfig({
   resolve: {
     alias: {
       'react-native': 'react-native-web',
-      'react-native-svg': 'react-native-web-svg',
-      'react-native/Libraries/Utilities/codegenNativeCommands': 'react-native-web/dist/modules/Utilities/codegenNativeCommands.js',
-      'react-native/Libraries/Image/AssetSourceResolver': 'react-native-web/dist/modules/Image/AssetSourceResolver.js',
-      'react-native/Libraries/Image/AssetRegistry': 'react-native-web/dist/modules/Image/AssetRegistry.js',
-      'react-native/Libraries/ReactNative/AppContainer': 'react-native-web/dist/modules/ReactNative/AppContainer.js',
-      'react-native/Libraries/Image/resolveAssetSource': 'react-native-web/dist/modules/Image/resolveAssetSource.js',
-      'react-native/Libraries/Utilities/codegenNativeComponent': 'react-native-web/dist/modules/Utilities/codegenNativeComponent.js'
-    }
+      'react-native-svg': 'react-native-web-svg'
+    },
+    alias: [
+      {
+        find: /^react-native\/Libraries\/Utilities\/codegenNativeCommands$/,
+        replacement: path.resolve(__dirname, 'node_modules/react-native-web/dist/modules/Utilities/codegenNativeCommands.js')
+      },
+      {
+        find: /^react-native\/Libraries\/Image\/AssetSourceResolver$/,
+        replacement: path.resolve(__dirname, 'node_modules/react-native-web/dist/modules/Image/AssetSourceResolver.js')
+      },
+      {
+        find: /^react-native\/Libraries\/Image\/AssetRegistry$/,
+        replacement: path.resolve(__dirname, 'node_modules/react-native-web/dist/modules/Image/AssetRegistry.js')
+      },
+      {
+        find: /^react-native\/Libraries\/ReactNative\/AppContainer$/,
+        replacement: path.resolve(__dirname, 'node_modules/react-native-web/dist/modules/ReactNative/AppContainer.js')
+      },
+      {
+        find: /^react-native\/Libraries\/Image\/resolveAssetSource$/,
+        replacement: path.resolve(__dirname, 'node_modules/react-native-web/dist/modules/Image/resolveAssetSource.js')
+      },
+      {
+        find: /^react-native\/Libraries\/Utilities\/codegenNativeComponent$/,
+        replacement: path.resolve(__dirname, 'node_modules/react-native-web/dist/modules/Utilities/codegenNativeComponent.js')
+      }
+    ]
   },
   optimizeDeps: {
     esbuildOptions: {
