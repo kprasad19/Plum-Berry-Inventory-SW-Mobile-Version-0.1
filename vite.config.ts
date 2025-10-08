@@ -10,7 +10,7 @@ export default defineConfig({
     react(),
     babel({
       babelConfig: {
-        presets: ['@babel/preset-react']
+        presets: ['@babel/preset-react', '@babel/preset-flow']
       },
       filter: (id) => {
         return /node_modules\/(react-native|@react-native|@expo)/.test(id) && 
